@@ -2,12 +2,12 @@ package uk.ac.ed.inf.PizzaDronz.models;
 
 public class Pizza {
     private String name;
-    private int price;
+    private Integer priceInPence;
 
     // Constructor
-    public Pizza(String name, int price) {
+    public Pizza(String name, Integer priceInPence) {
         this.name = name;
-        this.price = price;
+        this.priceInPence = priceInPence;
     }
 
     // Default constructor for JSON deserialization
@@ -23,15 +23,15 @@ public class Pizza {
         this.name = name;
     }
 
-    public int getPrice() {
-        return price;
+    public Integer getPriceInPence() {
+        return priceInPence;
     }
 
-    public void setPrice(int price) {
-        this.price = price;
+    public void setPriceInPence(Integer priceInPence) {
+        this.priceInPence = priceInPence;
     }
 
     public boolean isValid() {
-        return name != null && !name.isEmpty() && price > 0;
+        return name != null && !name.isEmpty() && priceInPence > 0;
     }
 } 

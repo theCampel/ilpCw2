@@ -55,13 +55,13 @@ public class CreditCardInformation {
     }
 
     @JsonIgnore
-    private boolean isValidCreditCardNumber() {
+    public boolean isValidCreditCardNumber() {
         return creditCardNumber != null && 
                creditCardNumber.matches("\\d{16}");  // Exactly 16 digits
     }
 
     @JsonIgnore
-    private boolean isValidExpiryDate() {
+    public boolean isValidExpiryDate() {
         if (creditCardExpiry == null || !creditCardExpiry.matches("\\d{2}/\\d{2}")) {
             return false;
         }
@@ -78,7 +78,7 @@ public class CreditCardInformation {
     }
 
     @JsonIgnore
-    private boolean isValidCvv() {
+    public boolean isValidCvv() {
         return cvv != null && 
                cvv.matches("\\d{3}");  // Exactly 3 digits
     }

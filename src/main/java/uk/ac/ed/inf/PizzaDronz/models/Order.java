@@ -1,12 +1,9 @@
 package uk.ac.ed.inf.PizzaDronz.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import uk.ac.ed.inf.PizzaDronz.constants.OrderValidationCode;
-import uk.ac.ed.inf.PizzaDronz.services.RestaurantService;
-
 import java.util.List;
+
+import uk.ac.ed.inf.PizzaDronz.constants.OrderStatus;
+import uk.ac.ed.inf.PizzaDronz.constants.OrderValidationCode;
 
 public class Order {
     private String orderNo;
@@ -14,55 +11,24 @@ public class Order {
     private Integer priceTotalInPence;
     private List<Pizza> pizzasInOrder;
     private CreditCardInformation creditCardInformation;
-    
-    @JsonIgnore
     private Restaurant restaurant;
-    
-    @Autowired
-    @JsonIgnore
-    private RestaurantService restaurantService;
+    private OrderValidationCode orderValidationCode;
+    private OrderStatus orderStatus;
 
-    // Default constructor for JSON deserialization
+    // The default constructor that actually gets used by JSON deserialization
     public Order() {
     }
 
-    // Constructor
+    // This constructor doesn't actually get used, but here for clarity
     public Order(String orderNo, String orderDate, Integer priceTotalInPence, List<Pizza> pizzasInOrder, CreditCardInformation creditCardInformation) {
         this.orderNo = orderNo;
         this.orderDate = orderDate;
         this.priceTotalInPence = priceTotalInPence;
         this.pizzasInOrder = pizzasInOrder;
         this.creditCardInformation = creditCardInformation;
-        this.restaurant = getRestaurant();
     }
 
     // Getters and Setters
-    @JsonIgnore
-    public Restaurant getRestaurant() {
-        if (restaurant != null) {
-            return restaurant;
-        }
-        
-        if (pizzasInOrder == null || pizzasInOrder.isEmpty()) {
-            return null;
-        }
-
-        // Get restaurant from first pizza
-        String firstPizzaName = pizzasInOrder.get(0).getName();
-        Restaurant foundRestaurant = restaurantService.findRestaurantByPizza(firstPizzaName);
-
-        // Verify all pizzas are from the same restaurant
-        for (Pizza pizza : pizzasInOrder) {
-            Restaurant pizzaRestaurant = restaurantService.findRestaurantByPizza(pizza.getName());
-            if (pizzaRestaurant != foundRestaurant) {
-                return null; // Pizzas from different restaurants
-            }
-        }
-
-        this.restaurant = foundRestaurant;
-        return foundRestaurant;
-    }
-
     public String getOrderNo() {
         return orderNo;
     }   
@@ -83,18 +49,27 @@ public class Order {
         return creditCardInformation;
     }
 
-    // Validation method
-    public boolean isValid() {
-
-
-        return orderNo != null && !orderNo.isEmpty() &&
-               orderDate != null && !orderDate.isEmpty() && 
-               priceTotalInPence != null && priceTotalInPence > 0 &&
-               pizzasInOrder != null && !pizzasInOrder.isEmpty() &&
-               creditCardInformation != null;
+    public Restaurant getRestaurant() {
+        return restaurant;
     }
 
-    public OrderValidationCode validateOrder() {
-        
+    public void setRestaurant(Restaurant restaurant) {
+        this.restaurant = restaurant;
+    }
 
+    public OrderValidationCode getOrderValidationCode() {
+        return orderValidationCode;
+    }   
+
+    public OrderStatus getOrderStatus() {
+        return orderStatus;
+    }
+
+    public void setOrderValidationCode(OrderValidationCode orderValidationCode) {
+        this.orderValidationCode = orderValidationCode;
+    }
+
+    public void setOrderStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
+    }
 }

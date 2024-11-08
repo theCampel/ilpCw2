@@ -1,6 +1,8 @@
 package uk.ac.ed.inf.PizzaDronz.models;
 
 import uk.ac.ed.inf.PizzaDronz.constants.DayOfWeek;
+
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -64,7 +66,21 @@ public class Restaurant {
     }
 
     // Helper method to check if restaurant is open on a specific day
-    public boolean isOpenOn(DayOfWeek day) {
-        return openingDays.contains(day);
+    public boolean isOpenOn(String date) {
+        DayOfWeek dayOfWeek = findDayOfWeekFromDate(date);
+        return openingDays.contains(dayOfWeek);
     }
+
+    private DayOfWeek findDayOfWeekFromDate(String date) {
+        LocalDate localDate = LocalDate.parse(date);
+        return DayOfWeek.valueOf(localDate.getDayOfWeek().name());
+    }
+
+    public Pizza findPizzaByName(String name) {
+        return menu.stream()
+                .filter(pizza -> pizza.getName().equals(name))
+                .findFirst()
+                .orElse(null);
+    }
+
 } 
