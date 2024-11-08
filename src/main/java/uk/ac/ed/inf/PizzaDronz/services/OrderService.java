@@ -30,9 +30,29 @@ public class OrderService {
             return new OrderValidationResult(OrderValidationCode.MAX_PIZZA_COUNT_EXCEEDED, OrderStatus.INVALID);
         }
 
+
+        
+        for (Pizza pizza : order.getPizzasInOrder()) {
+
+            if (restaurantService.findRestaurantByPizza(pizza.getName()) == null) {
+                return new OrderValidationResult(OrderValidationCode.PIZZA_NOT_DEFINED, OrderStatus.INVALID);
+            }
+            
+            // Checks the price is valid and that it matches the price of the pizza in the restaurant's menu
+            // TODO: This is a horrible way to do this. Fix.
+            if (pizza.getPriceInPence() <= 0 
+                || !pizza.getPriceInPence()
+                    .equals(restaurantService.findRestaurantByPizza(pizza.getName())
+                    .findPizzaByName(pizza.getName())
+                    .getPriceInPence())) {
+                return new OrderValidationResult(OrderValidationCode.PRICE_FOR_PIZZA_INVALID, OrderStatus.INVALID);
+            }
+        }
+
+
         Restaurant restaurant = inferRestaurant(order.getPizzasInOrder());
         order.setRestaurant(restaurant);
-        
+
         if (restaurant == null) {
             return new OrderValidationResult(OrderValidationCode.PIZZA_FROM_MULTIPLE_RESTAURANTS, OrderStatus.INVALID);
         }
@@ -41,15 +61,6 @@ public class OrderService {
             return new OrderValidationResult(OrderValidationCode.RESTAURANT_CLOSED, OrderStatus.INVALID);
         }
 
-        for (Pizza pizza : order.getPizzasInOrder()) {
-            Pizza menuPizza = restaurant.findPizzaByName(pizza.getName());
-            if (menuPizza == null) {
-                return new OrderValidationResult(OrderValidationCode.PIZZA_NOT_DEFINED, OrderStatus.INVALID);
-            }
-            if (!menuPizza.getPriceInPence().equals(pizza.getPriceInPence())) {
-                return new OrderValidationResult(OrderValidationCode.PRICE_FOR_PIZZA_INVALID, OrderStatus.INVALID);
-            }
-        }
 
         if (!isPriceCorrect(order)) {
             return new OrderValidationResult(OrderValidationCode.TOTAL_INCORRECT, OrderStatus.INVALID);
@@ -70,7 +81,7 @@ public class OrderService {
     }
 
     private Restaurant inferRestaurant(List<Pizza> pizzas) {
-        if (pizzas.isEmpty()) return null;
+        if (pizzas.isEmpty()) return null; // Should never happen
         
         Restaurant foundRestaurant = restaurantService.findRestaurantByPizza(pizzas.get(0).getName());
         
@@ -80,6 +91,13 @@ public class OrderService {
                 ? foundRestaurant 
                 : null;
     }
+
+
+
+
+    // private boolean doesPizzaExistInAnyRestaurant(Pizza pizza) {
+    //     return restaurantService.findRestaurantByPizza(pizza.getName()) != null;
+    // }
 
     private boolean isPriceCorrect(Order order) {
         int calculatedPrice = calculatePriceTotalInPence(order.getPizzasInOrder());

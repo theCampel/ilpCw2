@@ -71,7 +71,8 @@ public class CreditCardInformation {
             YearMonth expiryDate = YearMonth.parse(creditCardExpiry, formatter);
             YearMonth currentDate = YearMonth.now();
             
-            return expiryDate.isAfter(currentDate);
+            // There's no way of writing is after or current. Thus "not less than" will have to do.
+            return !expiryDate.isBefore(currentDate); 
         } catch (DateTimeParseException e) {
             return false;
         }
