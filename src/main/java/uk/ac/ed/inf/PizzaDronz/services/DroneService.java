@@ -1,35 +1,54 @@
 package uk.ac.ed.inf.PizzaDronz.services;
 
 import org.springframework.stereotype.Service;
+
+import uk.ac.ed.inf.PizzaDronz.constants.SystemConstants;
+import uk.ac.ed.inf.PizzaDronz.interfaces.LngLatHandling;
 import uk.ac.ed.inf.PizzaDronz.models.*;
 
 @Service
-public class DroneService {
+public class DroneService implements LngLatHandling {
     
-    public double calculateDistance(LngLatPairRequest lngLatPairRequest) {
-        double lng1 = lngLatPairRequest.getPosition1().getLng();
-        double lat1 = lngLatPairRequest.getPosition1().getLat();
-        double lng2 = lngLatPairRequest.getPosition2().getLng();
-        double lat2 = lngLatPairRequest.getPosition2().getLat();
+    @Override
+    public double distanceTo(LngLat startPosition, LngLat endPosition) {
+        // Debugging Information:
+        System.out.println("startPosition: " + startPosition);
+        System.out.println("endPosition: " + endPosition);  
+
+        double lng1 = startPosition.getLng();
+        double lat1 = startPosition.getLat();
+        double lng2 = endPosition.getLng();
+        double lat2 = endPosition.getLat();
 
         return Math.sqrt(Math.pow(lng2 - lng1, 2) + Math.pow(lat2 - lat1, 2));
     }
 
-    public LngLat calculateNextPosition(NextPositionRequest nextPositionRequest) {
-        double angleDegrees = nextPositionRequest.getAngle();
-        double angleRadians = Math.toRadians(90 - angleDegrees);
-        double deltaLng = 0.00015 * Math.cos(angleRadians);
-        double deltaLat = 0.00015 * Math.sin(angleRadians);
 
-        double newLng = nextPositionRequest.getStart().getLng() + deltaLng;
-        double newLat = nextPositionRequest.getStart().getLat() + deltaLat;
+    @Override
+    public boolean isCloseTo(LngLat startPosition, LngLat otherPosition) {
+        // Debugging Information:
+        System.out.println("startPosition: " + startPosition);
+        System.out.println("otherPosition: " + otherPosition);
+        System.out.println("distance: " + distanceTo(startPosition, otherPosition));
+
+        return distanceTo(startPosition, otherPosition) < SystemConstants.DRONE_IS_CLOSE_DISTANCE;
+    }
+
+    @Override
+    public LngLat nextPosition(LngLat startPosition, double angle) {
+        double angleRadians = Math.toRadians(90 - angle);
+        double deltaLng = SystemConstants.DRONE_MOVE_DISTANCE * Math.cos(angleRadians);
+        double deltaLat = SystemConstants.DRONE_MOVE_DISTANCE * Math.sin(angleRadians);
+
+        double newLng = startPosition.getLng() + deltaLng;
+        double newLat = startPosition.getLat() + deltaLat;
 
         return new LngLat(newLng, newLat);
     }
 
-    public boolean isPointInPolygon(InRegionRequest inRegionRequest) {
-        LngLat[] polygon = inRegionRequest.getRegion().getVertices();
-        LngLat point = inRegionRequest.getPosition();
+    public boolean isInRegion(LngLat position, Region region) {
+        LngLat[] polygon = region.getVertices();
+        LngLat point = position;
         int numVertices = polygon.length;
         boolean inside = false;
 
@@ -50,7 +69,6 @@ public class DroneService {
                 }
             }
         }
-
         return inside;
     }
 } 

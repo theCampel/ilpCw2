@@ -5,18 +5,19 @@ import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
-import static org.hamcrest.number.BigDecimalCloseTo.closeTo;
+import uk.ac.ed.inf.PizzaDronz.models.LngLat;
+import uk.ac.ed.inf.PizzaDronz.services.DroneService;
+import uk.ac.ed.inf.PizzaDronz.services.OrderService;
+import uk.ac.ed.inf.PizzaDronz.services.RestaurantService;
 
-
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -25,6 +26,17 @@ import static org.hamcrest.Matchers.*;
 
 @WebMvcTest(Controller.class)
 class ControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private DroneService droneService;
+
+    @MockBean
+    private OrderService orderService;
+
+    private static final double error = 0.00015;
 
     private Matcher<Object> isCloseTo(final double expected, final double error) {
         return new TypeSafeMatcher<Object>() {
@@ -46,12 +58,6 @@ class ControllerTest {
             }
         };
     }
-
-    @Autowired
-    private MockMvc mockMvc;
-
-    //private static final DecimalFormat df = new DecimalFormat("#.########");
-    private static final double error = 0.00015;
 
     // Test isAlive
     @Test
@@ -108,6 +114,8 @@ class ControllerTest {
     // Test isCloseTo with a valid request where the distance is less than 0.00015
     @Test
     public void testIsCloseTo_ValidRequest() throws Exception {
+        when(droneService.isCloseTo(any(LngLat.class), any(LngLat.class))).thenReturn(true);
+        
         String json = "{\"position1\":{\"lng\":-3.188267,\"lat\":55.944154},\"position2\":{\"lng\":-3.188267,\"lat\":55.944154}}";
         mockMvc.perform(post("/isCloseTo")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -225,6 +233,8 @@ class ControllerTest {
     // Test isInRegion with a valid region and point inside
     @Test
     public void testIsInRegion_ValidPointInsideRegion() throws Exception {
+        when(droneService.isInRegion(any(LngLat.class), any(Region.class))).thenReturn(true);
+
         String json = "{\"position\":{\"lng\":-3.1899133333333336,\"lat\":55.945129},\"region\":{\"vertices\":[{\"lng\":-3.188267,\"lat\":55.944154},{\"lng\":-3.192473,\"lat\":55.946233},{\"lng\":-3.189000,\"lat\":55.945000},{\"lng\":-3.188267,\"lat\":55.944154}]}}";
 
         mockMvc.perform(post("/isInRegion")

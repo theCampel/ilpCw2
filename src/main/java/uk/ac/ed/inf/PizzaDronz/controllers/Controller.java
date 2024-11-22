@@ -34,26 +34,20 @@ public class Controller {
         if (lngLatPairRequest == null || !lngLatPairRequest.isValid()){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        double distance = droneService.calculateDistance(lngLatPairRequest);
+
+        double distance = droneService.distanceTo(lngLatPairRequest.getPosition1(), 
+                                                lngLatPairRequest.getPosition2());
         return new ResponseEntity<>(distance, HttpStatus.OK);
     }
-
-
 
     @PostMapping("/isCloseTo")
     public ResponseEntity<Boolean> isCloseTo(@RequestBody LngLatPairRequest lngLatPairRequest){
         if (lngLatPairRequest == null || !lngLatPairRequest.isValid()){
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        double distance = droneService.calculateDistance(lngLatPairRequest);
-
-        if (distance <= 0.00015){
-            return new ResponseEntity<>(true, HttpStatus.OK);
-        } else if (distance > 0.00015) {
-            return new ResponseEntity<>(false, HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        }
+        boolean isCloseTo = droneService.isCloseTo(lngLatPairRequest.getPosition1(), 
+                                                  lngLatPairRequest.getPosition2());
+        return new ResponseEntity<>(isCloseTo, HttpStatus.OK);
     }
 
     @PostMapping("/nextPosition")
@@ -61,7 +55,8 @@ public class Controller {
         if (nextPositionRequest == null || !nextPositionRequest.isValid()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        LngLat nextPosition = droneService.calculateNextPosition(nextPositionRequest);
+        LngLat nextPosition = droneService.nextPosition(nextPositionRequest.getStart(), 
+                                                      nextPositionRequest.getAngle());
         return new ResponseEntity<>(nextPosition, HttpStatus.OK);
     }
 
@@ -71,12 +66,10 @@ public class Controller {
         if (inRegionRequest == null || !inRegionRequest.isValid()) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        boolean isInRegion = droneService.isPointInPolygon(inRegionRequest);
+        boolean isInRegion = droneService.isInRegion(inRegionRequest.getPosition(), 
+                                                    inRegionRequest.getRegion());
         return new ResponseEntity<>(isInRegion, HttpStatus.OK);
     }
-
-    // There's a lot wrong here
-    // TODO: Implement interfaces.
     
     @PostMapping("/validateOrder")
     public ResponseEntity<OrderValidationResult> validateOrder(@RequestBody Order order) {
@@ -87,6 +80,4 @@ public class Controller {
         OrderValidationResult orderValidationResult = orderService.validateOrder(order);
         return new ResponseEntity<>(orderValidationResult, HttpStatus.OK);
     }
-
-
 }
