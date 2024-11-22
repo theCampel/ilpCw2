@@ -42,4 +42,12 @@ public final class SystemConstants {
      */
     public static final double APPLETON_LAT = 55.944494;
 
+    /**
+     * Valid angles the drone can fly at
+     */
+    public static final double[] VALID_ANGLES = {0, 22.5, 45, 67.5, 90, 
+                                                112.5, 135, 157.5, 180, 
+                                                202.5, 225, 247.5, 270, 
+                                                292.5, 315, 337.5};
+
 }

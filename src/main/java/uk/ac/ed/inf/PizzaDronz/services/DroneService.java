@@ -11,10 +11,6 @@ public class DroneService implements LngLatHandling {
     
     @Override
     public double distanceTo(LngLat startPosition, LngLat endPosition) {
-        // Debugging Information:
-        System.out.println("startPosition: " + startPosition);
-        System.out.println("endPosition: " + endPosition);  
-
         double lng1 = startPosition.getLng();
         double lat1 = startPosition.getLat();
         double lng2 = endPosition.getLng();
@@ -26,27 +22,14 @@ public class DroneService implements LngLatHandling {
 
     @Override
     public boolean isCloseTo(LngLat startPosition, LngLat otherPosition) {
-        // Debugging Information:
-        System.out.println("startPosition: " + startPosition);
-        System.out.println("otherPosition: " + otherPosition);
-        System.out.println("distance: " + distanceTo(startPosition, otherPosition));
-
         return distanceTo(startPosition, otherPosition) < SystemConstants.DRONE_IS_CLOSE_DISTANCE;
     }
 
     @Override
     public LngLat nextPosition(LngLat startPosition, double angle) {
-        // Debugging Information:
-        System.out.println("startPosition: " + startPosition);
-        System.out.println("angle: " + angle);
-
         double angleRadians = Math.toRadians(angle);
         double deltaLng = SystemConstants.DRONE_MOVE_DISTANCE * Math.cos(angleRadians);
         double deltaLat = SystemConstants.DRONE_MOVE_DISTANCE * Math.sin(angleRadians);
-
-        // Debugging Information:
-        System.out.println("deltaLng: " + deltaLng);
-        System.out.println("deltaLat: " + deltaLat);
 
         double newLng = startPosition.getLng() + deltaLng;
         double newLat = startPosition.getLat() + deltaLat;

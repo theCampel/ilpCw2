@@ -17,10 +17,13 @@ public class Controller {
 
     private final DroneService droneService;
     private final OrderService orderService;
+    private final MapFlightPathService mapFlightPathService;
 
-    public Controller(DroneService droneService, OrderService orderService) {
+    public Controller(DroneService droneService, OrderService orderService, 
+                       MapFlightPathService mapFlightPathService) {
         this.droneService = droneService;
         this.orderService = orderService;
+        this.mapFlightPathService = mapFlightPathService;
     }
 
     @GetMapping("/isAlive")
@@ -97,10 +100,9 @@ public class Controller {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
         
-        // TODO: Placeholder: Just return direct path from restaurant to Appleton Tower
-        List<LngLat> path = new ArrayList<>();
-        path.add(order.getRestaurant().getLocation());  // Start at restaurant
-        path.add(new LngLat(SystemConstants.APPLETON_LNG, SystemConstants.APPLETON_LAT));  // End at Appleton Tower
+        List<LngLat> path = mapFlightPathService.findPath(order.getRestaurant().getLocation(), 
+                                                      new LngLat(SystemConstants.APPLETON_LNG, 
+                                                                 SystemConstants.APPLETON_LAT));
         
         return new ResponseEntity<>(path, HttpStatus.OK);
     }
