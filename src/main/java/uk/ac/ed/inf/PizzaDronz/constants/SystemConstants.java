@@ -50,4 +50,9 @@ public final class SystemConstants {
                                                 202.5, 225, 247.5, 270, 
                                                 292.5, 315, 337.5};
 
+    /**
+     * The buffer distance for no-fly zones
+     */
+    public static final double NO_FLY_ZONE_BUFFER = 0.0003;
+
 }

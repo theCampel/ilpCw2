@@ -103,10 +103,12 @@ public class MapFlightPathService {
         Set<PathNode> closedSet = new HashSet<>();
         Map<PathNode, PathNode> cameFrom = new HashMap<>();
         Map<PathNode, Double> gScore = new HashMap<>();
+        Map<PathNode, Double> lastAngle = new HashMap<>();  // Track the last angle used
         
         PathNode startNode = new PathNode(start);
         openSet.add(startNode);
         gScore.put(startNode, 0.0);
+        lastAngle.put(startNode, null);  // No previous angle for start node
         
         boolean enteredCentral = droneService.isInRegion(start, centralRegion);
         
@@ -119,18 +121,20 @@ public class MapFlightPathService {
             
             closedSet.add(current);
             
-            // Try all possible moves (16 compass directions)
-            for (double angle : VALID_ANGLES) {
+            // Get the previous angle used to reach this node
+            Double prevAngle = lastAngle.get(current);
+            
+            // Filter valid angles based on previous direction
+            double[] allowedAngles = filterValidAngles(prevAngle);
+            
+            // Try all allowed moves
+            for (double angle : allowedAngles) {
                 LngLat nextPos = droneService.nextPosition(current.position, angle);
                 PathNode neighbor = new PathNode(nextPos);
                 
-                // Skip if we've already visited this node
                 if (closedSet.contains(neighbor)) continue;
-                
-                // Check if move is valid
                 if (!isValidMove(current.position, nextPos, enteredCentral)) continue;
                 
-                // Update enteredCentral flag
                 if (!enteredCentral && droneService.isInRegion(nextPos, centralRegion)) {
                     enteredCentral = true;
                 }
@@ -140,6 +144,7 @@ public class MapFlightPathService {
                 if (!gScore.containsKey(neighbor) || tentativeGScore < gScore.get(neighbor)) {
                     cameFrom.put(neighbor, current);
                     gScore.put(neighbor, tentativeGScore);
+                    lastAngle.put(neighbor, angle);  // Store the angle used
                     neighbor.fScore = tentativeGScore + droneService.distanceTo(nextPos, end);
                     
                     if (!openSet.contains(neighbor)) {
@@ -151,29 +156,78 @@ public class MapFlightPathService {
         return new ArrayList<>(); // No path found
     }
     
+    // It's reasonable to assume that the drone will never need to turn more 
+    // than 112.5 degrees at a time. (I.e. the opposite 5 directions)
+    // Hence this heuristic. 
+    private double[] filterValidAngles(Double prevAngle) {
+        if (prevAngle == null) {
+            return VALID_ANGLES;  // Return all angles for first move
+        }
+        
+        List<Double> filtered = new ArrayList<>();
+        for (double angle : VALID_ANGLES) {
+            // Calculate the absolute difference between angles
+            double diff = Math.abs(angle - prevAngle);
+            // Normalize the difference to be between 0 and 180
+            if (diff > 180) {
+                diff = 360 - diff;
+            }
+            // Only add angles that aren't in the opposite 112.5-degree arc (5 directions)
+            if (diff <= 112.5) {
+                filtered.add(angle);
+            }
+        }
+        
+        return filtered.stream().mapToDouble(Double::doubleValue).toArray();
+    }
+    
     private boolean isValidMove(LngLat current, LngLat next, boolean enteredCentral) {
         // Check if we're trying to leave central area after entering it
         if (enteredCentral && !droneService.isInRegion(next, centralRegion)) {
             return false;
         }
         
+        // Buffer distance for no-fly zones (in degrees)
+        final double BUFFER = SystemConstants.NO_FLY_ZONE_BUFFER;
+        
         // Check for no-fly zones with buffer
         for (Region noFlyZone : noFlyZones) {
-            // Check if either point is too close to the no-fly zone // Not perfect - still gets too close.
-            for (LngLat vertex : noFlyZone.getVertices()) {
-                if (droneService.distanceTo(current, vertex) <= SystemConstants.DRONE_IS_CLOSE_DISTANCE ||
-                    droneService.distanceTo(next, vertex) <= SystemConstants.DRONE_IS_CLOSE_DISTANCE) {
-                    return false;
-                }
+            // Create a buffered version of the no-fly zone
+            LngLat[] vertices = noFlyZone.getVertices();
+            LngLat[] bufferedVertices = new LngLat[vertices.length];
+            
+            // For each vertex, extend it outward from the polygon's center
+            LngLat center = calculateCenter(vertices);
+            for (int i = 0; i < vertices.length; i++) {
+                double dx = vertices[i].getLng() - center.getLng();
+                double dy = vertices[i].getLat() - center.getLat();
+                // Normalize and extend by buffer
+                double distance = Math.sqrt(dx * dx + dy * dy);
+                double scale = (distance + BUFFER) / distance;
+                bufferedVertices[i] = new LngLat(
+                    center.getLng() + dx * scale,
+                    center.getLat() + dy * scale
+                );
             }
             
-            // Check if the point is inside the no-fly zone
-            if (droneService.isInRegion(next, noFlyZone) || droneService.isInRegion(current, noFlyZone)) {
+            Region bufferedZone = new Region(noFlyZone.getName() + "_buffered", bufferedVertices);
+            
+            // Check if either point is in the buffered zone
+            if (droneService.isInRegion(next, bufferedZone) || droneService.isInRegion(current, bufferedZone)) {
                 return false;
             }
         }
         
         return true;
+    }
+    
+    private LngLat calculateCenter(LngLat[] vertices) {
+        double sumLng = 0, sumLat = 0;
+        for (LngLat vertex : vertices) {
+            sumLng += vertex.getLng();
+            sumLat += vertex.getLat();
+        }
+        return new LngLat(sumLng / vertices.length, sumLat / vertices.length);
     }
     
     private List<LngLat> reconstructPath(Map<PathNode, PathNode> cameFrom, PathNode current) {
