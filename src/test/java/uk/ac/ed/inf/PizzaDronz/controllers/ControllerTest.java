@@ -1,8 +1,5 @@
 package uk.ac.ed.inf.PizzaDronz.controllers;
 
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.Test;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,14 +8,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
-import uk.ac.ed.inf.PizzaDronz.models.LngLat;
-import uk.ac.ed.inf.PizzaDronz.models.Region;
 import uk.ac.ed.inf.PizzaDronz.services.DroneService;
 import uk.ac.ed.inf.PizzaDronz.services.OrderService;
-import uk.ac.ed.inf.PizzaDronz.services.RestaurantService;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
