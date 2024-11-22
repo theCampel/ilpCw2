@@ -4,8 +4,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import uk.ac.ed.inf.PizzaDronz.constants.OrderStatus;
+import uk.ac.ed.inf.PizzaDronz.constants.SystemConstants;
 import uk.ac.ed.inf.PizzaDronz.models.*;
 import uk.ac.ed.inf.PizzaDronz.services.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class Controller {
@@ -78,5 +83,25 @@ public class Controller {
         
         OrderValidationResult orderValidationResult = orderService.validateOrder(order);
         return new ResponseEntity<>(orderValidationResult, HttpStatus.OK);
+    }
+
+    @PostMapping("/calcDeliveryPath")
+    public ResponseEntity<List<LngLat>> calcDeliveryPath(@RequestBody Order order) {
+        if (order == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        OrderValidationResult validationResult = orderService.validateOrder(order);
+        
+        if (validationResult.getOrderStatus() == OrderStatus.INVALID) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        
+        // TODO: Placeholder: Just return direct path from restaurant to Appleton Tower
+        List<LngLat> path = new ArrayList<>();
+        path.add(order.getRestaurant().getLocation());  // Start at restaurant
+        path.add(new LngLat(SystemConstants.APPLETON_LNG, SystemConstants.APPLETON_LAT));  // End at Appleton Tower
+        
+        return new ResponseEntity<>(path, HttpStatus.OK);
     }
 }
