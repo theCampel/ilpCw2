@@ -4,6 +4,12 @@ public class Region {
     private String name = null;
     private LngLat[] vertices;
 
+
+    public Region(String name, LngLat[] vertices) {
+        this.name = name;
+        this.vertices = vertices;
+    }
+
     public String getName() {
         return name;
     }

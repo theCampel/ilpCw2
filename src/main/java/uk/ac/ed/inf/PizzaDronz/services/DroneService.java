@@ -36,9 +36,17 @@ public class DroneService implements LngLatHandling {
 
     @Override
     public LngLat nextPosition(LngLat startPosition, double angle) {
-        double angleRadians = Math.toRadians(90 - angle);
+        // Debugging Information:
+        System.out.println("startPosition: " + startPosition);
+        System.out.println("angle: " + angle);
+
+        double angleRadians = Math.toRadians(angle);
         double deltaLng = SystemConstants.DRONE_MOVE_DISTANCE * Math.cos(angleRadians);
         double deltaLat = SystemConstants.DRONE_MOVE_DISTANCE * Math.sin(angleRadians);
+
+        // Debugging Information:
+        System.out.println("deltaLng: " + deltaLng);
+        System.out.println("deltaLat: " + deltaLat);
 
         double newLng = startPosition.getLng() + deltaLng;
         double newLat = startPosition.getLat() + deltaLat;
