@@ -23,13 +23,13 @@ public class MapFlightPathService {
     
     public MapFlightPathService(DroneService droneService) {
         this.droneService = droneService;
-        this.noFlyZones = initializeNoFlyZones();
-        this.centralRegion = initializeCentralRegion();
+        this.noFlyZones = initialiseNoFlyZones();
+        this.centralRegion = initialiseCentralRegion();
     }
     
     // TODO: This is hardcoded. Get dynamically from endpoint /noFlyZones
     
-    private Region initializeCentralRegion() {
+    private Region initialiseCentralRegion() {
         return new Region(SystemConstants.CENTRAL_REGION_NAME, new LngLat[]{
             new LngLat(-3.192473, 55.946233),
             new LngLat(-3.184319, 55.946233), 
@@ -39,7 +39,7 @@ public class MapFlightPathService {
         });
     }
     
-    private List<Region> initializeNoFlyZones() {
+    private List<Region> initialiseNoFlyZones() {
         List<Region> zones = new ArrayList<>();
         
         // George Square Area
@@ -256,7 +256,7 @@ public class MapFlightPathService {
         /** 
          * The f-score used by A* algorithm
          * f-score = g-score (distance from start) + heuristic (estimated distance to end)
-         * Initialized to MAX_VALUE as per A* algorithm requirements
+         * initialised to MAX_VALUE as per A* algorithm requirements
          */
         double fScore = Double.MAX_VALUE;
         
@@ -298,5 +298,25 @@ public class MapFlightPathService {
         public int hashCode() {
             return Objects.hash(position);
         }
+    }
+
+    public String convertPathToGeoJson(List<LngLat> path) {
+        StringBuilder geoJson = new StringBuilder();
+        geoJson.append("{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",")
+               .append("\"geometry\":{\"type\":\"LineString\",\"coordinates\":[");
+        
+        // Add coordinates
+        for (int i = 0; i < path.size(); i++) {
+            LngLat point = path.get(i);
+            geoJson.append("[").append(point.getLng()).append(",").append(point.getLat()).append("]");
+            if (i < path.size() - 1) {
+                geoJson.append(",");
+            }
+        }
+        
+        // Close the GeoJSON structure
+        geoJson.append("]},\"properties\":{}}]}");
+        
+        return geoJson.toString();
     }
 }

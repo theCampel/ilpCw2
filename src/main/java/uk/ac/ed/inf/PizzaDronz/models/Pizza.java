@@ -10,7 +10,7 @@ public class Pizza {
         this.priceInPence = priceInPence;
     }
 
-    // Default constructor for JSON deserialization
+    // Default constructor for JSON deserialisation
     public Pizza() {
     }
 

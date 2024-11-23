@@ -13,10 +13,10 @@ public class RestaurantService {
     private final List<Restaurant> restaurants;
 
     public RestaurantService() {
-        this.restaurants = initializeRestaurants();
+        this.restaurants = initialiseRestaurants();
     }
 
-    private List<Restaurant> initializeRestaurants() {
+    private List<Restaurant> initialiseRestaurants() {
         List<Restaurant> restaurants = new ArrayList<>();
         
         // Civerinos Slice

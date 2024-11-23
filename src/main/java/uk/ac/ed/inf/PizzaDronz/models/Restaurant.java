@@ -12,7 +12,7 @@ public class Restaurant {
     private Set<DayOfWeek> openingDays;  // Using Set to avoid duplicates
     private List<Pizza> menu;
 
-    // Default constructor for JSON deserialization
+    // Default constructor for JSON deserialisation
     public Restaurant() {
     }
 

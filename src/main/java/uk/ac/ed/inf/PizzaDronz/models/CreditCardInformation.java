@@ -10,7 +10,7 @@ public class CreditCardInformation {
     private String creditCardExpiry;  // Format: "MM/YY"
     private String cvv;
 
-    // Default constructor for JSON deserialization
+    // Default constructor for JSON deserialisation
     public CreditCardInformation() {
     }
 

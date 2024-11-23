@@ -15,7 +15,7 @@ public class Order {
     private OrderValidationCode orderValidationCode;
     private OrderStatus orderStatus;
 
-    // The default constructor that actually gets used by JSON deserialization
+    // The default constructor that actually gets used by JSON deserialisation
     public Order() {
     }
 

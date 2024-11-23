@@ -106,4 +106,25 @@ public class Controller {
         
         return new ResponseEntity<>(path, HttpStatus.OK);
     }
+
+    @PostMapping("/calcDeliveryPathAsGeoJson")
+    public ResponseEntity<String> calcDeliveryPathAsGeoJson(@RequestBody Order order) {
+        if (order == null) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+
+        OrderValidationResult validationResult = orderService.validateOrder(order);
+        
+        if (validationResult.getOrderStatus() == OrderStatus.INVALID) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        
+        List<LngLat> path = mapFlightPathService.findPath(
+            order.getRestaurant().getLocation(), 
+            new LngLat(SystemConstants.APPLETON_LNG, SystemConstants.APPLETON_LAT)
+        );
+        
+        String geoJson = mapFlightPathService.convertPathToGeoJson(path);
+        return new ResponseEntity<>(geoJson, HttpStatus.OK);
+    }
 }

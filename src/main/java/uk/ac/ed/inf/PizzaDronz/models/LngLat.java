@@ -6,7 +6,7 @@ public class LngLat {
     private Double lng;
     private Double lat;
 
-    // Constructor to initialize LngLat with longitude and latitude
+    // Constructor to initialise LngLat with longitude and latitude
     public LngLat(Double lng, Double lat) {
         this.lng = lng;
         this.lat = lat;
