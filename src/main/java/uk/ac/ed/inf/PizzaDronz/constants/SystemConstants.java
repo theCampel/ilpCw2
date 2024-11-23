@@ -59,5 +59,6 @@ public final class SystemConstants {
     public static final String BASE_API_URL = "https://ilp-rest-2024.azurewebsites.net";
     public static final String RESTAURANTS_API_URL = BASE_API_URL + "/restaurants";
     public static final String NO_FLY_ZONES_API_URL = BASE_API_URL + "/noFlyZones";
+    public static final String CENTRAL_REGION_API_URL = BASE_API_URL + "/centralArea";
 
 }

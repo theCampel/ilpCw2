@@ -54,6 +54,8 @@ public class OrderService implements OrderValidation {
      * @return OrderValidationResult containing validation status and any error codes
      */
     public OrderValidationResult validateOrder(Order order) {
+        restaurantService.updateRestaurants(); // Get fresh data before validating
+        
         // Basic order validation
         OrderValidationResult basicValidation = validateBasicOrderDetails(order);
         if (basicValidation.getOrderStatus() == OrderStatus.INVALID) {

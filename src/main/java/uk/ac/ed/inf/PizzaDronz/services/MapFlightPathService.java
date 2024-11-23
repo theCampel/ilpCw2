@@ -18,31 +18,27 @@ import java.util.Set;
 
 @Service
 public class MapFlightPathService {
-    private final List<Region> noFlyZones;
-    private final Region centralRegion;
-    private static final double[] VALID_ANGLES = SystemConstants.VALID_ANGLES;
     private final DroneService droneService;
-    private static final String NO_FLY_ZONES_API_URL = SystemConstants.NO_FLY_ZONES_API_URL;
+    private final RestTemplate restTemplate;
+    private static final double[] VALID_ANGLES = SystemConstants.VALID_ANGLES;
+    
+    // Keep as fields but mark as volatile to ensure thread safety
+    private volatile List<Region> noFlyZones;
+    private volatile Region centralRegion;
     
     public MapFlightPathService(DroneService droneService, RestTemplate restTemplate) {
         this.droneService = droneService;
-        this.noFlyZones = initialiseNoFlyZones(restTemplate);
-        this.centralRegion = initialiseCentralRegion();
+        this.restTemplate = restTemplate;
     }
     
-    private Region initialiseCentralRegion() {
-        return new Region(SystemConstants.CENTRAL_REGION_NAME, new LngLat[]{
-            new LngLat(-3.192473, 55.946233),
-            new LngLat(-3.184319, 55.946233), 
-            new LngLat(-3.184319, 55.942617),
-            new LngLat(-3.192473, 55.942617),
-            new LngLat(-3.192473, 55.946233)
-        });
+    private void updateZones() {
+        this.noFlyZones = getNoFlyZones();
+        this.centralRegion = getCentralRegion();
     }
     
-    private List<Region> initialiseNoFlyZones(RestTemplate restTemplate) {
+    private List<Region> getNoFlyZones() {
         try {
-            Region[] noFlyZonesArray = restTemplate.getForObject(NO_FLY_ZONES_API_URL, Region[].class);
+            Region[] noFlyZonesArray = restTemplate.getForObject(SystemConstants.NO_FLY_ZONES_API_URL, Region[].class);
             if (noFlyZonesArray == null) {
                 throw new RuntimeException("Failed to fetch no-fly zones from API");
             }
@@ -52,15 +48,22 @@ public class MapFlightPathService {
         }
     }
     
-    public List<Region> getNoFlyZones() {
-        return noFlyZones;
+    private Region getCentralRegion() {
+        try {
+            Region centralRegion = restTemplate.getForObject(SystemConstants.CENTRAL_REGION_API_URL, Region.class);
+            if (centralRegion == null) {
+                throw new RuntimeException("Failed to fetch central region from API");
+            }
+            return centralRegion;
+        } catch (Exception e) {
+            throw new RuntimeException("Error fetching central region: " + e.getMessage(), e);
+        }
     }
-
-    public Region getCentralRegion() {
-        return centralRegion;
-    }
-
+    
     public List<LngLat> findPath(LngLat start, LngLat end) {
+        // Update zones at the start of each path finding request
+        updateZones();
+        
         PriorityQueue<PathNode> openSet = new PriorityQueue<>();
         Set<PathNode> closedSet = new HashSet<>();
         Map<PathNode, PathNode> cameFrom = new HashMap<>();
@@ -73,7 +76,7 @@ public class MapFlightPathService {
         lastAngle.put(startNode, null);  // No previous angle for start node
         
         boolean enteredCentral = droneService.isInRegion(start, centralRegion);
-        
+
         while (!openSet.isEmpty()) {
             PathNode current = openSet.poll();
             

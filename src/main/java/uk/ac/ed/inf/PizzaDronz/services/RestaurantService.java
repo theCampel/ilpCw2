@@ -12,28 +12,29 @@ import org.springframework.web.client.RestTemplate;
 
 @Service
 public class RestaurantService {
-    private final List<Restaurant> restaurants;
-    private static final String RESTAURANTS_API_URL = SystemConstants.RESTAURANTS_API_URL;
+    private volatile List<Restaurant> restaurants;
     private final RestTemplate restTemplate;
 
     public RestaurantService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.restaurants = initialiseRestaurants();
     }
 
-    private List<Restaurant> initialiseRestaurants() {
+    public void updateRestaurants() {
         try {
-            Restaurant[] restaurantsArray = restTemplate.getForObject(RESTAURANTS_API_URL, Restaurant[].class);
+            Restaurant[] restaurantsArray = restTemplate.getForObject(SystemConstants.RESTAURANTS_API_URL, Restaurant[].class);
             if (restaurantsArray == null) {
                 throw new RuntimeException("Failed to fetch restaurants from API");
             }
-            return new ArrayList<>(Arrays.asList(restaurantsArray));
+            this.restaurants = new ArrayList<>(Arrays.asList(restaurantsArray));
         } catch (Exception e) {
             throw new RuntimeException("Error fetching restaurants: " + e.getMessage(), e);
         }
+        System.out.println("Updated restaurants");
+        System.out.println(restaurants);
     }
 
     public Restaurant findRestaurantByPizza(String pizzaName) {
+        //updateRestaurants();  // Get fresh data before searching
         for (Restaurant restaurant : restaurants) {
             for (Pizza pizza : restaurant.getMenu()) {
                 if (pizza.getName().equals(pizzaName)) {
@@ -45,6 +46,7 @@ public class RestaurantService {
     }
 
     public List<Restaurant> getAllRestaurants() {
+        //updateRestaurants();  // Get fresh data before returning
         return restaurants;
     }
 } 
