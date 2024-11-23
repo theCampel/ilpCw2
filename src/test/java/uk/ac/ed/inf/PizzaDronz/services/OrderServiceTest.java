@@ -5,8 +5,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.TestFactory;
-import uk.ac.ed.inf.PizzaDronz.models.Order;
-import uk.ac.ed.inf.PizzaDronz.models.OrderValidationResult;
+import org.mockito.Mockito;
+import org.springframework.web.client.RestTemplate;
+import uk.ac.ed.inf.PizzaDronz.models.*;
 import uk.ac.ed.inf.PizzaDronz.constants.OrderValidationCode;
 import uk.ac.ed.inf.PizzaDronz.constants.OrderStatus;
 
@@ -16,21 +17,38 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 
 class OrderServiceTest {
 
     private OrderService orderService;
     private List<Order> testOrders;
+    private Restaurant[] testRestaurants;
 
+    // Basically, we're not dynamically calling restaurant api endpoint for each
+    // test, so instead we're getting hardcoding them into a json and reading
+    // them from there. Below is reading them. 
     @BeforeEach
     void setUp() throws IOException {
-        RestaurantService restaurantService = new RestaurantService();
+        ObjectMapper mapper = new ObjectMapper();
+        
+        // Load test restaurants
+        InputStream restaurantsStream = getClass().getResourceAsStream("/test-restaurants.json");
+        testRestaurants = mapper.readValue(restaurantsStream, Restaurant[].class);
+        
+        // Create mock RestTemplate
+        RestTemplate mockRestTemplate = Mockito.mock(RestTemplate.class);
+        Mockito.when(mockRestTemplate.getForObject(anyString(), eq(Restaurant[].class)))
+               .thenReturn(testRestaurants);
+        
+        // Initialize services with mock
+        RestaurantService restaurantService = new RestaurantService(mockRestTemplate);
         orderService = new OrderService(restaurantService);
         
-        // Load test orders from JSON file
-        ObjectMapper mapper = new ObjectMapper();
-        InputStream inputStream = getClass().getResourceAsStream("/test-orders.json");
-        testOrders = mapper.readValue(inputStream, new TypeReference<List<Order>>() {});
+        // Load test orders
+        InputStream ordersStream = getClass().getResourceAsStream("/test-orders.json");
+        testOrders = mapper.readValue(ordersStream, new TypeReference<List<Order>>() {});
     }
 
     @TestFactory

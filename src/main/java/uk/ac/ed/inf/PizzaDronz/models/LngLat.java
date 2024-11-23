@@ -6,7 +6,10 @@ public class LngLat {
     private Double lng;
     private Double lat;
 
-    // Constructor to initialise LngLat with longitude and latitude
+    // Add default constructor for Jackson
+    public LngLat() {
+    }
+
     public LngLat(Double lng, Double lat) {
         this.lng = lng;
         this.lat = lat;

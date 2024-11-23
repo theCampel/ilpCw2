@@ -7,9 +7,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.client.RestTemplate;
 
 import uk.ac.ed.inf.PizzaDronz.services.DroneService;
 import uk.ac.ed.inf.PizzaDronz.services.OrderService;
+import uk.ac.ed.inf.PizzaDronz.services.RestaurantService;
+import uk.ac.ed.inf.PizzaDronz.services.MapFlightPathService;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -28,6 +31,15 @@ class ControllerTest {
 
     @MockBean
     private OrderService orderService;
+    
+    @MockBean
+    private RestTemplate restTemplate;
+    
+    @MockBean
+    private RestaurantService restaurantService;
+    
+    @MockBean
+    private MapFlightPathService mapFlightPathService;
 
     
     // Test isAlive

@@ -55,4 +55,9 @@ public final class SystemConstants {
      */
     public static final double NO_FLY_ZONE_BUFFER = 0.0003;
 
+    // API Endpoints
+    public static final String BASE_API_URL = "https://ilp-rest-2024.azurewebsites.net";
+    public static final String RESTAURANTS_API_URL = BASE_API_URL + "/restaurants";
+    public static final String NO_FLY_ZONES_API_URL = BASE_API_URL + "/noFlyZones";
+
 }
