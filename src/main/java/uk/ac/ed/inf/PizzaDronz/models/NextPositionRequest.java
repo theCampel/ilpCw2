@@ -24,6 +24,7 @@ public class NextPositionRequest {
         this.angle = angle;
     }
 
+    // Remember, angle can only be 1/16 compass directions.
     private boolean isValidAngle(int angle) {
         double[] validAngles = SystemConstants.VALID_ANGLES;
         for (double validAngle : validAngles) {

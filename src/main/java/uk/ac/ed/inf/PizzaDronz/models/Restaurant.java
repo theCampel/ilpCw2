@@ -22,6 +22,7 @@ public class Restaurant {
         this.location = location;
         this.openingDays = openingDays;
         this.menu = menu;
+        
     }
 
     // Getters and Setters
@@ -82,5 +83,4 @@ public class Restaurant {
                 .findFirst()
                 .orElse(null);
     }
-
 } 

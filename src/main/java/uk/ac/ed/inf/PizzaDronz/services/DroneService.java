@@ -8,7 +8,7 @@ import uk.ac.ed.inf.PizzaDronz.models.*;
 
 @Service
 public class DroneService implements LngLatHandling {
-    
+    // Return the euclidian distance between two points.
     @Override
     public double distanceTo(LngLat startPosition, LngLat endPosition) {
         double lng1 = startPosition.getLng();
@@ -19,7 +19,8 @@ public class DroneService implements LngLatHandling {
         return Math.sqrt(Math.pow(lng2 - lng1, 2) + Math.pow(lat2 - lat1, 2));
     }
 
-
+    // According to the Spec, if the distance between two points is less than 0.00015,
+    // then the points are close to each other.
     @Override
     public boolean isCloseTo(LngLat startPosition, LngLat otherPosition) {
         return distanceTo(startPosition, otherPosition) < SystemConstants.DRONE_IS_CLOSE_DISTANCE;

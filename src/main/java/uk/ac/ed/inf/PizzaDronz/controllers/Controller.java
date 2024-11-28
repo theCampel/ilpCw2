@@ -9,7 +9,6 @@ import uk.ac.ed.inf.PizzaDronz.constants.SystemConstants;
 import uk.ac.ed.inf.PizzaDronz.models.*;
 import uk.ac.ed.inf.PizzaDronz.services.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -26,16 +25,19 @@ public class Controller {
         this.mapFlightPathService = mapFlightPathService;
     }
 
+    // Health check
     @GetMapping("/isAlive")
     public boolean isAlive(){
         return true;
     }
 
+    // Return the student ID
     @GetMapping("/uuid")
     public String uuid(){
         return "s2222816";
     }
 
+    // Return the distance between two points, given as a request body
     @PostMapping("/distanceTo")
     public ResponseEntity<Double> distanceTo(@RequestBody LngLatPairRequest lngLatPairRequest){
         if (lngLatPairRequest == null || !lngLatPairRequest.isValid()){
@@ -47,6 +49,8 @@ public class Controller {
         return new ResponseEntity<>(distance, HttpStatus.OK);
     }
 
+    // Return whether two points are close (less than 0.00015 as declared in constants file),
+    // given as a request body
     @PostMapping("/isCloseTo")
     public ResponseEntity<Boolean> isCloseTo(@RequestBody LngLatPairRequest lngLatPairRequest){
         if (lngLatPairRequest == null || !lngLatPairRequest.isValid()){
@@ -57,6 +61,7 @@ public class Controller {
         return new ResponseEntity<>(isCloseTo, HttpStatus.OK);
     }
 
+    // Return the next position (direction + 0.00015 degrees)
     @PostMapping("/nextPosition")
     public ResponseEntity<LngLat> nextPosition(@RequestBody NextPositionRequest nextPositionRequest) {
         if (nextPositionRequest == null || !nextPositionRequest.isValid()) {
@@ -67,7 +72,8 @@ public class Controller {
         return new ResponseEntity<>(nextPosition, HttpStatus.OK);
     }
 
-
+    // Return whether a point is in a region, given as a request body 
+    // Uses ray casting algorithm.
     @PostMapping("/isInRegion")
     public ResponseEntity<Boolean> isInRegion(@RequestBody InRegionRequest inRegionRequest) {
         if (inRegionRequest == null || !inRegionRequest.isValid()) {
@@ -77,7 +83,8 @@ public class Controller {
                                                     inRegionRequest.getRegion());
         return new ResponseEntity<>(isInRegion, HttpStatus.OK);
     }
-    
+
+    // Return the validation result of an order, given as a request body
     @PostMapping("/validateOrder")
     public ResponseEntity<OrderValidationResult> validateOrder(@RequestBody Order order) {
         if (order == null) {
@@ -88,6 +95,7 @@ public class Controller {
         return new ResponseEntity<>(orderValidationResult, HttpStatus.OK);
     }
 
+    // Return the delivery path of an order.
     @PostMapping("/calcDeliveryPath")
     public ResponseEntity<List<LngLat>> calcDeliveryPath(@RequestBody Order order) {
         if (order == null) {
@@ -107,6 +115,7 @@ public class Controller {
         return new ResponseEntity<>(path, HttpStatus.OK);
     }
 
+    // Return the delivery path of an order as a GeoJSON-pastable string.
     @PostMapping("/calcDeliveryPathAsGeoJson")
     public ResponseEntity<String> calcDeliveryPathAsGeoJson(@RequestBody Order order) {
         if (order == null) {

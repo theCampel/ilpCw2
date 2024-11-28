@@ -2,9 +2,19 @@ package uk.ac.ed.inf.PizzaDronz.services;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.web.client.RestTemplate;
+
 import uk.ac.ed.inf.PizzaDronz.constants.SystemConstants;
 import uk.ac.ed.inf.PizzaDronz.models.LngLat;
 import uk.ac.ed.inf.PizzaDronz.models.Region;
+import uk.ac.ed.inf.PizzaDronz.models.Order;
+import uk.ac.ed.inf.PizzaDronz.models.Restaurant;
+import uk.ac.ed.inf.PizzaDronz.models.Pizza;
+import java.util.List;
+import java.util.Set;
+import java.util.Arrays;
+import uk.ac.ed.inf.PizzaDronz.models.CreditCardInformation;
+import uk.ac.ed.inf.PizzaDronz.constants.DayOfWeek;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -12,11 +22,15 @@ class DroneServiceTest {
     
     private DroneService droneService;
     private LngLat appletonTower;
+    private MapFlightPathService mapFlightPathService;
+    private RestaurantService restaurantService;
     
     @BeforeEach
     void setUp() {
         droneService = new DroneService();
         appletonTower = new LngLat(SystemConstants.APPLETON_LNG, SystemConstants.APPLETON_LAT);
+        restaurantService = new RestaurantService(new RestTemplate());
+        mapFlightPathService = new MapFlightPathService(droneService, new RestTemplate());
     }
     
     @Test
@@ -102,5 +116,55 @@ class DroneServiceTest {
         
         LngLat outsidePoint = new LngLat(-3.195000, 55.950000);
         assertFalse(droneService.isInRegion(outsidePoint, testRegion));
+    }
+
+    @Test
+    void testDeliveryPathCalculation_PerformanceUnder20Seconds() {
+        // Create a sample valid order
+        Restaurant restaurant = new Restaurant(
+            "Civerinos Slice",
+            new LngLat(-3.1912869215011597, 55.945535152517735),
+            Set.of(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY, DayOfWeek.SUNDAY),
+            Arrays.asList(
+                new Pizza("R1: Margarita", 1000),
+                new Pizza("R1: Calzone", 1400)
+            )
+        );
+        
+        restaurantService.addRestaurant(restaurant);
+        
+        Order order = new Order(
+            "63067305",
+            "2024-11-15",
+            2500,
+            Arrays.asList(new Pizza("R1: Margarita", 1000), new Pizza("R1: Calzone", 1400)),
+            new CreditCardInformation(
+                "2221053797986070",
+                "11/27",
+                "254"
+            )
+        );
+
+        // Measure execution time
+        long startTime = System.currentTimeMillis();
+        
+        List<LngLat> path = mapFlightPathService.findPath(
+            restaurant.getLocation(),
+            new LngLat(SystemConstants.APPLETON_LNG, SystemConstants.APPLETON_LAT)
+        );
+        
+        long endTime = System.currentTimeMillis();
+        long executionTime = endTime - startTime;
+
+        // Assert path is not null and contains points
+        assertNotNull(path);
+        assertFalse(path.isEmpty());
+        
+        // Assert execution time is under 20 seconds (20000 milliseconds)
+        assertTrue(executionTime < 10000, 
+            String.format("Path calculation took %d ms, which exceeds the 20 second limit", executionTime));
+        
+        // Optional: Print the actual execution time for monitoring
+        System.out.println("Path calculation took " + executionTime + " ms");
     }
 }

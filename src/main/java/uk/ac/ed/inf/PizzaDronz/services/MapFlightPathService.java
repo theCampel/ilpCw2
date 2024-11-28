@@ -22,7 +22,7 @@ public class MapFlightPathService {
     private final RestTemplate restTemplate;
     private static final double[] VALID_ANGLES = SystemConstants.VALID_ANGLES;
     
-    // Keep as fields but mark as volatile to ensure thread safety
+    // Because they're updated frequently, keep as fields but mark as volatile.
     private volatile List<Region> noFlyZones;
     private volatile Region centralRegion;
     
@@ -59,11 +59,18 @@ public class MapFlightPathService {
             throw new RuntimeException("Error fetching central region: " + e.getMessage(), e);
         }
     }
-    
+
+    /*
+     * Find the shortest path between two points using slightly modified 
+     * A* algorithm. A*:
+     * 1. Calculate the cost using the distance to next node and estimated distance to end.
+     * 2. Filter out invalid moves. (explanations below)
+     * 3. Iteratively search and evaluate the cost of each possible move.
+     * 4. Once the end is reached, backtrack to generate the path.
+     */
     public List<LngLat> findPath(LngLat start, LngLat end) {
         // Update zones at the start of each path finding request
         updateZones();
-        
         PriorityQueue<PathNode> openSet = new PriorityQueue<>();
         Set<PathNode> closedSet = new HashSet<>();
         Map<PathNode, PathNode> cameFrom = new HashMap<>();
@@ -121,8 +128,9 @@ public class MapFlightPathService {
         return new ArrayList<>(); // No path found
     }
     
-    // It's reasonable to assume that the drone will never need to turn more 
-    // than 112.5 degrees at a time. (I.e. the opposite 5 directions)
+    // First Optimisation: It's reasonable to assume that the drone 
+    // will never need to turn more than 112.5 degrees at a time. 
+    // (I.e. the opposite 5 directions)
     // Hence this heuristic. 
     private double[] filterValidAngles(Double prevAngle) {
         if (prevAngle == null) {
@@ -145,7 +153,12 @@ public class MapFlightPathService {
         
         return filtered.stream().mapToDouble(Double::doubleValue).toArray();
     }
-    
+
+    /*
+     * Check if move is valid:
+     * 1. If we've entered central area, we can't leave it.
+     * 2. Add a buffer around no-fly zones (otherwise drone flies too close)
+     */
     private boolean isValidMove(LngLat current, LngLat next, boolean enteredCentral) {
         // Check if we're trying to leave central area after entering it
         if (enteredCentral && !droneService.isInRegion(next, centralRegion)) {
@@ -161,7 +174,7 @@ public class MapFlightPathService {
             LngLat[] vertices = noFlyZone.getVertices();
             LngLat[] bufferedVertices = new LngLat[vertices.length];
             
-            // For each vertex, extend it outward from the polygon's center
+            // For each vertex, extend the buffer outward from the polygon's center
             LngLat center = calculateCenter(vertices);
             for (int i = 0; i < vertices.length; i++) {
                 double dx = vertices[i].getLng() - center.getLng();
@@ -182,7 +195,6 @@ public class MapFlightPathService {
                 return false;
             }
         }
-        
         return true;
     }
     
@@ -194,7 +206,7 @@ public class MapFlightPathService {
         }
         return new LngLat(sumLng / vertices.length, sumLat / vertices.length);
     }
-    
+    // Once you've reached the end, work backward to gen the path. 
     private List<LngLat> reconstructPath(Map<PathNode, PathNode> cameFrom, PathNode current) {
         List<LngLat> path = new ArrayList<>();
         PathNode node = current;
@@ -266,6 +278,7 @@ public class MapFlightPathService {
     }
 
     public String convertPathToGeoJson(List<LngLat> path) {
+        // Hardcoded GeoJSON structure, inputs the path and returns a string.
         StringBuilder geoJson = new StringBuilder();
         geoJson.append("{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",")
                .append("\"geometry\":{\"type\":\"LineString\",\"coordinates\":[");

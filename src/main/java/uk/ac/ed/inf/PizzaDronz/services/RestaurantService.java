@@ -17,6 +17,15 @@ public class RestaurantService {
 
     public RestaurantService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
+        this.restaurants = new ArrayList<>();
+    }
+
+    // For testing purposes
+    public void addRestaurant(Restaurant restaurant) {
+        if (restaurants == null) {
+            restaurants = new ArrayList<>();
+        }
+        restaurants.add(restaurant);
     }
 
     public void updateRestaurants() {

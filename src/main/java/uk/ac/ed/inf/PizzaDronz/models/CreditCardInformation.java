@@ -60,6 +60,7 @@ public class CreditCardInformation {
                creditCardNumber.matches("\\d{16}");  // Exactly 16 digits
     }
 
+    // Check if the expiry date is valid (not before today).
     @JsonIgnore
     public boolean isValidExpiryDate() {
         if (creditCardExpiry == null || !creditCardExpiry.matches("\\d{2}/\\d{2}")) {
@@ -71,7 +72,8 @@ public class CreditCardInformation {
             YearMonth expiryDate = YearMonth.parse(creditCardExpiry, formatter);
             YearMonth currentDate = YearMonth.now();
             
-            // There's no way of writing is after or current. Thus "not less than" will have to do.
+            // There's no way of writing "is the date after today or today?". 
+            // Thus "not less than" will have to do.
             return !expiryDate.isBefore(currentDate); 
         } catch (DateTimeParseException e) {
             return false;

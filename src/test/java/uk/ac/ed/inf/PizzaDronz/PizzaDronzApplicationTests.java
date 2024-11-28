@@ -7,7 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 class PizzaDronzApplicationTests {
 
 	@Test
-	void contextLoads() { // TODO: Add way more tests.
+	void contextLoads() { 
 	}
 
 }
