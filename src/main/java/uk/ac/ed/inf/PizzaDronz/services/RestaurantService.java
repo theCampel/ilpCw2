@@ -2,8 +2,6 @@ package uk.ac.ed.inf.PizzaDronz.services;
 
 import uk.ac.ed.inf.PizzaDronz.models.Restaurant;
 import uk.ac.ed.inf.PizzaDronz.models.Pizza;
-import uk.ac.ed.inf.PizzaDronz.models.LngLat;
-import uk.ac.ed.inf.PizzaDronz.constants.DayOfWeek;
 import uk.ac.ed.inf.PizzaDronz.constants.SystemConstants;
 
 import org.springframework.stereotype.Service;
