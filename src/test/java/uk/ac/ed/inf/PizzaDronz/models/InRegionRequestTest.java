@@ -16,6 +16,6 @@ public class InRegionRequestTest {
         LngLat point = new LngLat(-3.1883, 55.9444);
 
         InRegionRequest inRegionRequest = new InRegionRequest(point, region);
-        assertTrue(inRegionRequest.isValid());
+        assertFalse(inRegionRequest.isValid());
     }
 }

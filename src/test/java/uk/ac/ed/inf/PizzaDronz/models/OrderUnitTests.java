@@ -3,6 +3,7 @@ package uk.ac.ed.inf.PizzaDronz.models;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
+import uk.ac.ed.inf.PizzaDronz.constants.OrderStatus;
 
 import org.junit.jupiter.api.BeforeEach;
 
@@ -68,5 +69,12 @@ public class OrderUnitTests {
     void testExpiryDate_ValidExpireyDate() {
         creditCardInformation.setCreditCardExpiry("01/26");        
         assertTrue(creditCardInformation.isValidExpiryDate());
+    }
+
+    @Test
+    void testOrder_OrderStatus_Valid() {
+        Order order = new Order();
+        order.setOrderStatus(OrderStatus.VALID);
+        assertTrue(order.getOrderStatus() == OrderStatus.VALID);
     }
 }
