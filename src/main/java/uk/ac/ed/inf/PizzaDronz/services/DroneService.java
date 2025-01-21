@@ -8,7 +8,7 @@ import uk.ac.ed.inf.PizzaDronz.models.*;
 
 @Service
 public class DroneService implements LngLatHandling {
-    // Return the euclidian distance between two points.
+    // Return the euclidean distance between two points.
     @Override
     public double distanceTo(LngLat startPosition, LngLat endPosition) {
         double lng1 = startPosition.getLng();

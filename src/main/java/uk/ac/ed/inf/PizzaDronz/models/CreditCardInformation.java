@@ -62,7 +62,7 @@ public class CreditCardInformation {
 
     // Check if the expiry date is valid (not before today).
     @JsonIgnore
-    public boolean isValidExpiryDate() {
+    public boolean  isValidExpiryDate() {
         if (creditCardExpiry == null || !creditCardExpiry.matches("\\d{2}/\\d{2}")) {
             return false;
         }

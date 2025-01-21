@@ -72,4 +72,8 @@ public class Order {
     public void setOrderStatus(OrderStatus orderStatus) {
         this.orderStatus = orderStatus;
     }
+
+    public boolean isValid() {
+        return orderStatus == OrderStatus.VALID && orderValidationCode == OrderValidationCode.NO_ERROR;
+    }
 }
